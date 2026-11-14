@@ -1,0 +1,14 @@
+{
+  "appId": "com.daleelak.app",
+  "appName": "Daleelak",
+  "webDir": "www",
+  "server": {
+    "androidScheme": "https"
+  },
+  "plugins": {
+    "Geolocation": {
+      "permissions": ["location", "coarseLocation"]
+    }
+  }
+}
+
