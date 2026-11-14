@@ -24,13 +24,13 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Install dependencies and add Android
+      - name: Install dependencies and sync Android
         run: |
           mkdir -p www
           cp index.html www/
           npm install
-          npx cap init "Daleelak" "com.daleelak.app" --web-dir www || true
           npx cap add android
+          npx cap sync android
 
       - name: Add Permissions to AndroidManifest
         run: |
@@ -42,7 +42,7 @@ jobs:
               <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
               <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
               <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-              <uses-feature android:name="android.hardware.location.gps" />
+              <uses-feature android:name="android.hardware.location.gps" android:required="false" />
           """
           content = content.replace("<application", perms + "<application", 1)
           with open(path, "w") as f:
