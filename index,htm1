@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>دليلك الطبي الذكي</title>
+    <style>
+        :root {
+            --primary: #0066cc;
+            --primary-dark: #004c99;
+            --success: #198754;
+            --danger: #dc3545;
+            --warning: #fd7e14;
+            --bg: #f4f6f9;
+            --card: #ffffff;
+            --text: #1e293b;
+        }
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Arial, sans-serif; }
+        body { background-color: var(--bg); margin: 0; padding: 0; color: var(--text); padding-bottom: 40px; }
+
+        /* شريط الطوارئ */
+        .emergency-bar {
+            background-color: var(--danger);
+            color: white;
+            padding: 8px 10px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 6px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .emergency-bar a {
+            color: white;
+            text-decoration: none;
+            background: rgba(0,0,0,0.25);
+            padding: 4px 9px;
+            border-radius: 12px;
+        }
+
+        /* الترويسة */
+        .header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            padding: 20px 15px;
+            text-align: center;
+            border-bottom-left-radius: 22px;
+            border-bottom-right-radius: 22px;
+            box-shadow: 0 4px 12px rgba(0,102,204,0.2);
+        }
+        .header h1 { margin: 0; font-size: 22px; }
+        .header p { margin: 5px 0 0; font-size: 13px; opacity: 0.9; }
+
+        .container { padding: 15px; max-width: 650px; margin: auto; }
+
+        /* لوحة البحث */
+        .search-panel {
+            background: var(--card);
+            padding: 15px;
+            border-radius: 16px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-bottom: 15px;
+        }
+        .row { display: flex; gap: 8px; margin-bottom: 10px; }
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            font-size: 14px;
+            outline: none;
+            background: #fff;
+        }
+        input:focus, select:focus { border-color: var(--primary); }
+
+        .btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: bold;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+        .btn-gps { background-color: var(--success); }
+        .btn-city { background-color: var(--primary); }
+
+        /* التصنيفات */
+        .tabs {
+            display: flex;
+            gap: 6px;
+            overflow-x: auto;
+            padding-bottom: 6px;
+            margin-bottom: 12px;
+        }
+        .tab {
+            background: #e2e8f0;
+            color: #334155;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: bold;
+            white-space: nowrap;
+            cursor: pointer;
+        }
+        .tab.active { background: var(--primary); color: white; }
+
+        #status {
+            text-align: center;
+            font-size: 13px;
+            color: #475569;
+            margin: 10px 0;
+            padding: 10px;
+            background: #e2e8f0;
+            border-radius: 10px;
+            font-weight: 500;
+        }
+
+        /* البطاقات */
+        .card {
+            background: var(--card);
+            border-radius: 14px;
+            padding: 15px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            border-right: 5px solid var(--primary);
+            position: relative;
+        }
+        .card h3 { margin: 0 0 6px 0; font-size: 17px; color: var(--primary-dark); padding-left: 32px; }
+        .fav-btn {
+            position: absolute;
+            top: 14px;
+            left: 14px;
+            background: none;
+            border: none;
+            font-size: 22px;
+            cursor: pointer;
+            color: #cbd5e1;
+        }
+        .fav-btn.saved { color: #f59e0b; }
+
+        .badges { margin-bottom: 8px; }
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            font-size: 11px;
+            border-radius: 6px;
+            background: #e0f2fe;
+            color: #0369a1;
+            font-weight: bold;
+        }
+        .dist-badge { background: #dcfce7; color: #15803d; margin-right: 5px; }
+
+        .info-line { margin: 4px 0; font-size: 13px; color: #475569; }
+
+        .card-actions {
+            display: flex;
+            gap: 6px;
+            margin-top: 12px;
+            border-top: 1px solid #f1f5f9;
+            padding-top: 10px;
+        }
+        .action-btn {
+            flex: 1;
+            text-align: center;
+            padding: 8px 4px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+        }
+        .act-map { background: #dcfce7; color: #15803d; }
+        .act-call { background: #e0f2fe; color: #0369a1; }
+        .act-share { background: #fef3c7; color: #b45309; }
+        .act-disabled { background: #f1f5f9; color: #94a3b8; pointer-events: none; }
+    </style>
+</head>
+<body>
+
+<div class="emergency-bar">
+    <span>طوارئ مصر:</span>
+    <a href="tel:123">🚑 إسعاف 123</a>
+    <a href="tel:122">🚓 نجدة 122</a>
+    <a href="tel:180">🚒 مطافئ 180</a>
+    <a href="tel:137">🏥 طوارئ صحة 137</a>
+</div>
+
+<div class="header">
+    <h1>دليلك الطبي الذكي</h1>
+    <p>البحث الشامل عن الأطباء والمستشفيات والصيدليات</p>
+</div>
+
+<div class="container">
+    <div class="search-panel">
+        <div class="row">
+            <input type="text" id="nameInput" placeholder="🔍 ابحث بالاسم أو التخصص (دكتور، صيدلية، مستشفى)..." onkeyup="renderResults()">
+        </div>
+        <div class="row">
+            <input type="text" id="cityInput" placeholder="أو اكتب اسم المدينة (مثلاً: الأقصر، القاهرة، أسوان)...">
+            <select id="radiusSelect" style="width: 115px;">
+                <option value="3000">3 كم</option>
+                <option value="5000" selected>5 كم</option>
+                <option value="10000">10 كم</option>
+                <option value="20000">20 كم</option>
+            </select>
+        </div>
+        <div class="row" style="margin-bottom: 0;">
+            <button class="btn btn-gps" onclick="locateUser()">📍 الأقرب لموقعي (GPS)</button>
+            <button class="btn btn-city" onclick="searchCity()">🏙️ بحث بالمدينة</button>
+        </div>
+    </div>
+
+    <div class="tabs">
+        <button class="tab active" onclick="changeTab('all', this)">الكل</button>
+        <button class="tab" onclick="changeTab('hospital', this)">🏥 مستشفيات</button>
+        <button class="tab" onclick="changeTab('clinic', this)">👨‍⚕️ أطباء وعيادات</button>
+        <button class="tab" onclick="changeTab('pharmacy', this)">💊 صيدليات</button>
+        <button class="tab" onclick="changeTab('favorites', this)">⭐ المفضلة</button>
+    </div>
+
+    <div id="status">اضغط على "الأقرب لموقعي (GPS)" أو اكتب اسم مدينتك للبحث</div>
+    <div id="listContainer"></div>
+</div>
+
+<script>
+    let allPlaces = [];
+    let currentTab = 'all';
+    let savedFavs = JSON.parse(localStorage.getItem('daleelak_favs') || '[]');
+
+    function getDistance(lat1, lon1, lat2, lon2) {
+        if (!lat1 || !lon1) return 999;
+        const R = 6371;
+        const dLat = (lat2 - lat1) * Math.PI / 180;
+        const dLon = (lon2 - lon1) * Math.PI / 180;
+        const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                  Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                  Math.sin(dLon/2) * Math.sin(dLon/2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        return parseFloat((R * c).toFixed(1));
+    }
+
+    function locateUser() {
+        const status = document.getElementById('status');
+        status.innerText = "⏳ جاري تحديد موقعك الجغرافي عبر الأقمار الصناعية (GPS)...";
+
+        if (!navigator.geolocation) {
+            status.innerText = "❌ جهازك لا يدعم تحديد الموقع.";
+            return;
+        }
+
+        navigator.geolocation.getCurrentPosition(
+            (pos) => {
+                const lat = pos.coords.latitude;
+                const lon = pos.coords.longitude;
+                status.innerText = "✅ تم تحديد موقعك! جاري جلب الأطباء والصيدليات القريبة...";
+                fetchFromOverpass(lat, lon);
+            },
+            (err) => {
+                status.innerText = "⚠️ تعذر تحديد الموقع. تأكد من تشغيل GPS في الهاتف والسماح للتطبيق بالوصول للموقع.";
+            },
+            { enableHighAccuracy: true, timeout: 15000 }
+        );
+    }
+
+    async function searchCity() {
+        const city = document.getElementById('cityInput').value.trim();
+        const status = document.getElementById('status');
+        if (!city) {
+            status.innerText = "⚠️ اكتب اسم المدينة أو المنطقة أولاً.";
+            return;
+        }
+
+        status.innerText = `⏳ جاري البحث عن "${city}"...`;
+        try {
+            const res = await fetch(`https://openstreetmap.org{encodeURIComponent(city)}&limit=1`);
+            const data = await res.json();
+            if (data.length === 0) {
+                status.innerText = "❌ لم يتم العثور على المدينة، تأكد من كتابة الاسم بشكل صحيح.";
+                return;
+            }
+            const lat = parseFloat(data.lat);
+            const lon = parseFloat(data.lon);
+            status.innerText = `✅ جاري جلب الخدمات الطبية في "${city}"...`;
+
