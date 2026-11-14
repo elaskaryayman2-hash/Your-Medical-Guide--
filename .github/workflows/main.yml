@@ -12,8 +12,6 @@ jobs:
       with:
         distribution: 'temurin'
         java-version: '21'
-    - name: Setup Android SDK
-      uses: android-actions/setup-android@v3
     - name: Create App and Build APK
       run: |
         mkdir -p www
@@ -144,4 +142,5 @@ jobs:
                 const status = document.getElementById('status');
                 const query = `[out:json][timeout:25];(node["amenity"~"hospital|clinic|doctors|pharmacy"](around:${radius},${lat},${lon});way["amenity"~"hospital|clinic|doctors|pharmacy"](around:${radius},${lat},${lon}););out center;`;
                 try {
+                    const res = await fetch("https://overpass-api.de" + encodeURIComponent(query));
 
