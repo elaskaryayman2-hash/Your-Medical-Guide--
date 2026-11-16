@@ -2,18 +2,17 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>دليلك الطبي - الخريطة والخدمات القريبة</title>
     <style>
         body { font-family: Tahoma, Arial, sans-serif; text-align: center; margin: 0; padding: 15px; background-color: #f4f7f6; }
         h2 { color: #00796b; margin: 5px 0 12px 0; font-size: 20px; }
         .btn-group { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
-        button { background-color: #00796b; color: white; border: none; padding: 10px 16px; font-size: 14px; border-radius: 8px; cursor: pointer; font-weight: bold; }
-        button:hover { background-color: #004d40; }
+        button { background-color: #00796b; color: white; border: none; padding: 12px 16px; font-size: 14px; border-radius: 10px; cursor: pointer; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        button:active { transform: scale(0.98); background-color: #004d40; }
         .btn-sub { background-color: #ffffff; color: #00796b; border: 1px solid #00796b; }
-        .btn-sub:hover { background-color: #e0f2f1; }
-        #status { margin: 8px 0; font-weight: bold; color: #333; font-size: 13px; }
-        #map-box { width: 100%; max-width: 800px; height: 420px; margin: 10px auto; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.15); background: #e0e0e0; }
+        #status { margin: 10px 0; font-weight: bold; color: #333; font-size: 13px; }
+        #map-box { width: 100%; max-width: 800px; height: 430px; margin: 10px auto; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.15); background: #e0e0e0; }
         iframe { width: 100%; height: 100%; border: 0; }
     </style>
 </head>
@@ -22,49 +21,80 @@
     <h2>🏥 دليلك الطبي - أقرب الخدمات إليك</h2>
     
     <div class="btn-group">
-        <button onclick="getUserLocation('')">📍 موقعي الحالي</button>
-        <button class="btn-sub" onclick="getUserLocation('مستشفى')">🏥 أقرب مستشفى</button>
-        <button class="btn-sub" onclick="getUserLocation('صيدلية')">💊 أقرب صيدلية</button>
-        <button class="btn-sub" onclick="getUserLocation('عيادة')">🩺 أقرب عيادة</button>
+        <button onclick="locateOnMap()">📍 تحديد موقعي على الخريطة</button>
+        <button class="btn-sub" onclick="searchNearby('مستشفى')">🏥 أقرب مستشفى</button>
+        <button class="btn-sub" onclick="searchNearby('صيدلية')">💊 أقرب صيدلية</button>
+        <button class="btn-sub" onclick="searchNearby('عيادة')">🩺 أقرب عيادة</button>
     </div>
 
-    <div id="status">اضغط على أي زر بالأعلى لتحديد موقعك وعرض الخريطة فوراً</div>
+    <div id="status">اضغط على "تحديد موقعي على الخريطة" لإظهار موقعك الفعلي</div>
 
     <div id="map-box">
-        <iframe id="gmap" src="https://google.com"></iframe>
+        <iframe id="osm-map" src="https://openstreetmap.org"></iframe>
     </div>
 
     <script>
-        function getUserLocation(searchType) {
-            const status = document.getElementById('status');
-            const mapFrame = document.getElementById('gmap');
+        let userLat = null;
+        let userLng = null;
 
-            if (!navigator.geolocation) {
-                status.textContent = "⚠️ متصفحك لا يدعم تحديد الموقع.";
-                return;
+        async function getCoordinates() {
+            // 1. المحاولة عبر إضافة Capacitor الرسمية إذا كان يعمل كتطبيق أندرويد
+            if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Geolocation) {
+                const Geolocation = window.Capacitor.Plugins.Geolocation;
+                await Geolocation.requestPermissions();
+                const pos = await Geolocation.getCurrentPosition({ enableHighAccuracy: true });
+                return { lat: pos.coords.latitude, lng: pos.coords.longitude };
             }
-
-            status.textContent = "⏳ جاري تحديد موقعك بدقة...";
-
-            navigator.geolocation.getCurrentPosition(
-                (position) => {
-                    const lat = position.coords.latitude;
-                    const lng = position.coords.longitude;
-
-                    if (searchType === '') {
-                        status.textContent = `✅ تم تحديد موقعك بنجاح (${lat.toFixed(4)}, ${lng.toFixed(4)})`;
-                        mapFrame.src = `https://google.com{lat},${lng}&hl=ar&z=16&output=embed`;
-                    } else {
-                        status.textContent = `✅ جاري عرض أقرب (${searchType}) حول موقعك الحالي`;
-                        mapFrame.src = `https://google.com{encodeURIComponent(searchType)}&sll=${lat},${lng}&hl=ar&z=15&output=embed`;
-                    }
-                },
-                (error) => {
-                    status.textContent = "⚠️ تعذر تحديد الموقع. يرجى تفعيل GPS والسماح للمتصفح.";
+            
+            // 2. المحاولة عبر المتصفح العادي (Web / WebView)
+            return new Promise((resolve, reject) => {
+                if (!navigator.geolocation) {
+                    reject("المتصفح لا يدعم تحديد الموقع");
+                } else {
+                    navigator.geolocation.getCurrentPosition(
+                        (pos) => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+                        (err) => reject(err),
+                        { enableHighAccuracy: true, timeout: 10000 }
+                    );
                 }
-            );
+            });
+        }
+
+        async function locateOnMap() {
+            const status = document.getElementById('status');
+            const mapFrame = document.getElementById('osm-map');
+
+            status.textContent = "⏳ جاري تحديد موقعك بدقة عبر GPS...";
+
+            try {
+                const coords = await getCoordinates();
+                userLat = coords.lat;
+                userLng = coords.lng;
+
+                status.textContent = `✅ تم تحديد موقعك بنجاح (${userLat.toFixed(4)}, ${userLng.toFixed(4)})`;
+
+                const delta = 0.008;
+                const bbox = `${userLng - delta},${userLat - delta},${userLng + delta},${userLat + delta}`;
+                mapFrame.src = `https://openstreetmap.org{bbox}&layer=mapnik&marker=${userLat},${userLng}`;
+            } catch (error) {
+                status.textContent = "⚠️ تعذر تحديد الموقع. يرجى تفعيل GPS وإعطاء الإذن للتطبيق.";
+            }
+        }
+
+        async function searchNearby(serviceName) {
+            const status = document.getElementById('status');
+            try {
+                if (!userLat || !userLng) {
+                    status.textContent = "⏳ جاري تحديد موقعك أولاً للبحث حولك...";
+                    await locateOnMap();
+                }
+                if (userLat && userLng) {
+                    window.open(`https://google.com{encodeURIComponent(serviceName)}/@${userLat},${userLng},15z`, '_blank');
+                }
+            } catch (e) {
+                status.textContent = "⚠️ يرجى تفعيل الموقع أولاً للبحث عن أقرب خدمة.";
+            }
         }
     </script>
 </body>
 </html>
-
