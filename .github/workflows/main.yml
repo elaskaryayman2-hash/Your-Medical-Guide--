@@ -24,31 +24,31 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Prepare Web Assets (HTML & Images)
+      - name: Prepare Web Assets
         run: |
           mkdir -p www
           cp index.html www/
-          cp bg.png www/ || true
-          cp icon.png www/ || true
+          cp bg.png.jpg www/ || true
+          cp app_icon.png.jpg www/ || true
 
       - name: Install Capacitor & Build Android Project
         run: |
-          npm install @capacitor/core @capacitor/cli @capacitor/android
+          npm init -y
+          npm install @capacitor/core@6 @capacitor/cli@6 @capacitor/android@6
+          npx cap init "دليلك الطبي" "com.dalilak.medical" --web-dir="www"
           npx cap add android
           npx cap sync android
 
       - name: Set App Icon & Location Permissions
         run: |
-          # 1. استبدال الأيقونة الافتراضية بصورتك icon.png
-          if [ -f "icon.png" ]; then
+          if [ -f "app_icon.png.jpg" ]; then
             rm -rf android/app/src/main/res/mipmap-anydpi-v26
             for dir in android/app/src/main/res/mipmap-*; do
-              cp icon.png "$dir/ic_launcher.png"
-              cp icon.png "$dir/ic_launcher_round.png"
+              cp app_icon.png.jpg "$dir/ic_launcher.png"
+              cp app_icon.png.jpg "$dir/ic_launcher_round.png"
             done
           fi
 
-          # 2. إضافة أذونات الموقع الجغرافي والإنترنت في AndroidManifest.xml
           MANIFEST="android/app/src/main/AndroidManifest.xml"
           sed -i 's/<application/<uses-permission android:name="android.permission.INTERNET" \/>\n    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" \/>\n    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" \/>\n    <application/' $MANIFEST
 
