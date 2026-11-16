@@ -3,71 +3,64 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>دليلك الطبي - تحديد الموقع</title>
-    <!-- استدعاء مكتبة خرائط Leaflet المجانية -->
-    <link rel="stylesheet" href="https://unpkg.com" />
+    <title>دليلك الطبي - الخريطة والخدمات القريبة</title>
     <style>
-        body { font-family: Tahoma, Arial, sans-serif; text-align: center; margin: 0; padding: 20px; background-color: #f4f7f6; }
-        h2 { color: #00796b; }
-        button { background-color: #00796b; color: white; border: none; padding: 12px 24px; font-size: 16px; border-radius: 8px; cursor: pointer; margin-bottom: 15px; }
+        body { font-family: Tahoma, Arial, sans-serif; text-align: center; margin: 0; padding: 15px; background-color: #f4f7f6; }
+        h2 { color: #00796b; margin: 5px 0 12px 0; font-size: 20px; }
+        .btn-group { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+        button { background-color: #00796b; color: white; border: none; padding: 10px 16px; font-size: 14px; border-radius: 8px; cursor: pointer; font-weight: bold; }
         button:hover { background-color: #004d40; }
-        #status { margin: 10px 0; font-weight: bold; color: #333; }
-        #map { height: 450px; width: 100%; max-width: 800px; margin: 0 auto; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .btn-sub { background-color: #ffffff; color: #00796b; border: 1px solid #00796b; }
+        .btn-sub:hover { background-color: #e0f2f1; }
+        #status { margin: 8px 0; font-weight: bold; color: #333; font-size: 13px; }
+        #map-box { width: 100%; max-width: 800px; height: 420px; margin: 10px auto; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.15); background: #e0e0e0; }
+        iframe { width: 100%; height: 100%; border: 0; }
     </style>
 </head>
 <body>
 
     <h2>🏥 دليلك الطبي - أقرب الخدمات إليك</h2>
-    <button onclick="getUserLocation()">📍 تحديد موقعي الحالي</button>
-    <div id="status">اضغط على الزر لتحديد موقعك وعرض الخريطة</div>
-    <div id="map"></div>
+    
+    <div class="btn-group">
+        <button onclick="getUserLocation('')">📍 موقعي الحالي</button>
+        <button class="btn-sub" onclick="getUserLocation('مستشفى')">🏥 أقرب مستشفى</button>
+        <button class="btn-sub" onclick="getUserLocation('صيدلية')">💊 أقرب صيدلية</button>
+        <button class="btn-sub" onclick="getUserLocation('عيادة')">🩺 أقرب عيادة</button>
+    </div>
 
-    <!-- استدعاء كود الخرائط -->
-    <script src="https://unpkg.com"></script>
+    <div id="status">اضغط على أي زر بالأعلى لتحديد موقعك وعرض الخريطة فوراً</div>
+
+    <div id="map-box">
+        <iframe id="gmap" src="https://google.com"></iframe>
+    </div>
+
     <script>
-        // تهيئة الخريطة مبدئياً (مثال: الأقصر، مصر)
-        let map = L.map('map').setView([25.6872, 32.6396], 13);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap'
-        }).addTo(map);
-
-        let userMarker;
-
-        function getUserLocation() {
+        function getUserLocation(searchType) {
             const status = document.getElementById('status');
+            const mapFrame = document.getElementById('gmap');
 
             if (!navigator.geolocation) {
-                status.textContent = "متصفحك لا يدعم خاصية تحديد الموقع الجغرافي.";
+                status.textContent = "⚠️ متصفحك لا يدعم تحديد الموقع.";
                 return;
             }
 
-            status.textContent = "جاري تحديد موقعك...";
+            status.textContent = "⏳ جاري تحديد موقعك بدقة...";
 
             navigator.geolocation.getCurrentPosition(
                 (position) => {
                     const lat = position.coords.latitude;
                     const lng = position.coords.longitude;
 
-                    status.textContent = `تم تحديد موقعك بنجاح! (خط العرض: ${lat.toFixed(4)}، خط الطول: ${lng.toFixed(4)})`;
-
-                    // تحريك الخريطة لموقع المستخدم
-                    map.setView([lat, lng], 15);
-
-                    // إضافة أو تحديث علامة موقع المستخدم
-                    if (userMarker) {
-                        userMarker.setLatLng([lat, lng]);
+                    if (searchType === '') {
+                        status.textContent = `✅ تم تحديد موقعك بنجاح (${lat.toFixed(4)}, ${lng.toFixed(4)})`;
+                        mapFrame.src = `https://google.com{lat},${lng}&hl=ar&z=16&output=embed`;
                     } else {
-                        userMarker = L.marker([lat, lng]).addTo(map)
-                            .bindPopup("<b>أنت هنا!</b><br>نبحث لك عن أقرب المراكز الطبية.")
-                            .openPopup();
+                        status.textContent = `✅ جاري عرض أقرب (${searchType}) حول موقعك الحالي`;
+                        mapFrame.src = `https://google.com{encodeURIComponent(searchType)}&sll=${lat},${lng}&hl=ar&z=15&output=embed`;
                     }
-
-                    // مثال لإضافة مستشفى قريب (يمكنك تكرار هذا السطر لإضافة عياداتك)
-                    L.marker([lat + 0.003, lng + 0.003]).addTo(map)
-                        .bindPopup("<b>مستشفى الرعاية الطبية</b><br>يبعد حوالي 400 متر");
                 },
                 (error) => {
-                    status.textContent = "تعذر الحصول على الموقع. يرجى تفعيل GPS والسماح للمتصفح بالوصول للموقع.";
+                    status.textContent = "⚠️ تعذر تحديد الموقع. يرجى تفعيل GPS والسماح للمتصفح.";
                 }
             );
         }
