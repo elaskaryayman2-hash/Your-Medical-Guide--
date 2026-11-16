@@ -1,6 +1,6 @@
 {
-  "appId": "com.daleelak.app",
-  "appName": "Daleelak",
+  "appId": "com.dalilak.altebbi",
+  "appName": "دليلك الطبي",
   "webDir": "www",
   "server": {
     "androidScheme": "https"
@@ -11,4 +11,3 @@
     }
   }
 }
-
