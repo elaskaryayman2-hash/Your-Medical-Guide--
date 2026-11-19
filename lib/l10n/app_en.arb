@@ -1,0 +1,19 @@
+{
+  "@@locale": "en",
+  "appTitle": "Your Medical Guide",
+  "heroTitle": "Find healthcare, wherever you are.",
+  "heroSubtitle": "Discover hospitals, clinics and doctors around your location.",
+  "searchHint": "Doctor, specialty, hospital or city",
+  "search": "Search",
+  "browseByCategory": "Browse by category",
+  "all": "All",
+  "hospitals": "Hospitals",
+  "clinics": "Clinics",
+  "doctors": "Doctors",
+  "globalSearchTitle": "Healthcare directory, designed for the world",
+  "globalSearchSubtitle": "Search coverage depends on trusted data sources available in each country.",
+  "nearbySection": "Nearby healthcare",
+  "locationNeededTitle": "Location services will appear here",
+  "locationNeededSubtitle": "Location permission and live provider search will be connected in the next development stage.",
+  "importantNote": "Directory information must be verified. This app does not provide medical diagnosis or emergency dispatch."
+}
